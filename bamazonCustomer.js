@@ -4,16 +4,13 @@ const inquirer = require('inquirer');
 const connection = mysql.createConnection({
     host: "localhost",
   
-    // Your port; if not 3306
     port: 3307,
   
-    // Your username
     user: "root",
   
-    // Your password
     password: "root",
     database: "bamazon"
-  });
+});
 
 const updateDatabase = (item, amount) => {
     connection.query('SELECT * FROM products', (err, res) => {
