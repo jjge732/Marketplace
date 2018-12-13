@@ -3,22 +3,20 @@ const inquirer = require('inquirer');
 
 const connection = mysql.createConnection({
     host: "localhost",
-  
     port: 3307,
-  
     user: "root",
-  
     password: "root",
     database: "bamazon"
 });
 
-const updateDatabase = (item, amount) => {
+const updateDatabase = (item, amount, total) => {
     connection.query('SELECT * FROM products', (err, res) => {
         if (err) throw err;
         connection.query('UPDATE products SET ? WHERE ?',
         [
             {
-                stock_quantity: res[parseInt(item[0] - 1)].stock_quantity - amount
+                stock_quantity: res[parseInt(item[0] - 1)].stock_quantity - amount,
+                product_sales: res[parseInt(item[0] - 1)].product_sales + total
             }, {
                 item_id: item[0]
             }
@@ -30,39 +28,39 @@ const updateDatabase = (item, amount) => {
 }
 
 const checkout = (item, cost, amount) => {
-let total = cost * amount;
-let item_name = '';
-for (let i = 3; i + 1 < item.length; i++) {
-    item_name += item[i];
-}
-inquirer.prompt([{
-    type: 'confirm',
-    message: `Please confirm your purchase of ${amount} ${item_name}(s) for $${total.toFixed(2)} dollars.`,
-    name: 'purchase'
-}]).then(res => {
-    if (res.purchase) {
-        console.log('Thank you for your purchase! Come again soon!');
-        updateDatabase(item, amount);
-    } else {
-        inquirer.prompt([{
-            type: 'confirm',
-            message: 'Would you like to abandon your checkout?',
-            name: 'abandon'
-        }]).then(response => {
-            if (response.abandon) {
-                console.log('Okay, goodbye.');
-                connection.end();
-                return;
-            } else {
-                checkout(item, cost, amount);
-            }
-        }).catch(error => {
-            console.log(error);
-        })
+    let total = cost * amount;
+    let item_name = '';
+    for (let i = 3; i + 1 < item.length; i++) {
+        item_name += item[i];
     }
-}).catch(err => {
-    console.log(err);
-})
+    inquirer.prompt([{
+        type: 'confirm',
+        message: `Please confirm your purchase of ${amount} ${item_name}(s) for $${total.toFixed(2)} dollars.`,
+        name: 'purchase'
+    }]).then(res => {
+        if (res.purchase) {
+            console.log('Thank you for your purchase! Come again soon!');
+            updateDatabase(item, amount, total);
+        } else {
+            inquirer.prompt([{
+                type: 'confirm',
+                message: 'Would you like to abandon your checkout?',
+                name: 'abandon'
+            }]).then(response => {
+                if (response.abandon) {
+                    console.log('Okay, goodbye.');
+                    connection.end();
+                    return;
+                } else {
+                    checkout(item, cost, amount);
+                }
+            }).catch(error => {
+                console.log(error);
+            })
+        }
+    }).catch(err => {
+        console.log(err);
+    })
 }
 
 const purchase = (product_names, product_prices, product_quantity) => {
