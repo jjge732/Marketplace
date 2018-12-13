@@ -17,7 +17,7 @@ CREATE TABLE products (
 CREATE TABLE departments (
     department_id INTEGER(11) AUTO_INCREMENT NOT NULL,
     department_name VARCHAR(30) NOT NULL,
-    over_head_costs INTEGER(11) NOT NULL,
+    over_head_costs FLOAT(11,2) NOT NULL,
     PRIMARY KEY(department_id)
 );
 
@@ -32,5 +32,8 @@ VALUES ('chair', 'furnishings', 24.95, 10),
 ('washer', 'appliances', 395.95, 8),
 ('dryer', 'appliances', 405.95, 6),
 ('range', 'appliances', 595.35, 3);
+
+INSERT INTO departments (department_name, over_head_costs) 
+VALUES ('furnishings', 5000), ('utensils', 3000), ('appliances', 7000);
 
 SELECT * FROM products;

@@ -117,6 +117,5 @@ const displayData = () => {
 
 connection.connect(err => {
     if (err) throw err;
-    console.log('connected as id ' + connection.threadId + '\n');
     displayData();
 });
