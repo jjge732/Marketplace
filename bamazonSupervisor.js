@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+const cTable = require('console.table');
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -53,8 +54,28 @@ const getDepartmentInfo = () => {
     })
 }
 
+const viewSales = () => {
+    // http://www.zentut.com/sql-tutorial/
+    let query = 'SELECT departments.department_id, departments.department_name, SUM(products.product_sales) AS product_sales, departments.over_head_costs ';
+    query += 'FROM products RIGHT JOIN departments ON products.department_name = departments.department_name GROUP BY departments.department_id';
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        let table = [];
+        for (let i = 0; i < res.length; i++) {
+            table.push({
+                ...res[i], 
+                total_profit: (res[i].product_sales - res[i].over_head_costs).toFixed(2)
+            });
+        }
+        console.log();
+        console.table(table);
+        console.log('\n *A value of null results from a department that currently contains no products. \n')
+        displayOptions();
+    })
+}
+
 const displayOptions = () => {
-    const options = ['View product sales by department', 'Create new department'];
+    const options = ['View product sales by department', 'Create new department', 'Exit'];
     inquirer.prompt([{
         type: 'list',
         message: 'Please select an action to perform.',
@@ -62,9 +83,12 @@ const displayOptions = () => {
         name: 'action'
     }]).then(res => {
         if (res.action === options[0]) {
-
+            viewSales();
         } else if (res.action === options[1]) {
             getDepartmentInfo();
+        } else if (res.action === options[options.length - 1]) {
+            console.log('Okay, goodbye.');
+            connection.end();
         } else {
             console.log('Action not supported. Goodbye.');
             connection.end();
