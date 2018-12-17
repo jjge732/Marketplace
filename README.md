@@ -7,7 +7,7 @@
 - Supervisors can check department sales and add new departments.
 
 ### Getting Started
-1. Users must first download the files and install the npms in the package-json file.
+1. Users must first download the files and install the npms in the package.json file.
 2. After that, using the app is as simple as using node to invoke the program in the terminal.
 
 ### Screenshots
