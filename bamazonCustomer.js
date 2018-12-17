@@ -12,13 +12,19 @@ const connection = mysql.createConnection({
 const updateDatabase = (item, amount, total) => {
     connection.query('SELECT * FROM products', (err, res) => {
         if (err) throw err;
+        let index = String(item[0]);
+        if (item[1] !== ' ') {
+            index += item[1];
+        }
+        index = Number(index);
+        index -= 1;
         connection.query('UPDATE products SET ? WHERE ?',
         [
             {
-                stock_quantity: res[parseInt(item[0] - 1)].stock_quantity - amount,
-                product_sales: res[parseInt(item[0] - 1)].product_sales + total
+                stock_quantity: res[index].stock_quantity - amount,
+                product_sales: res[index].product_sales + total
             }, {
-                item_id: item[0]
+                item_id: index + 1
             }
         ], (err, res => {
             if (err) throw err;
@@ -30,8 +36,15 @@ const updateDatabase = (item, amount, total) => {
 const checkout = (item, cost, amount) => {
     let total = cost * amount;
     let item_name = '';
-    for (let i = 3; i + 1 < item.length; i++) {
-        item_name += item[i];
+    console.log(item);
+    if (item[1] !== ' ') {
+        for (let i = 4; i + 1 < item.length; i++) {
+            item_name += item[i];
+        }
+    } else {
+        for (let i = 3; i + 1 < item.length; i++) {
+            item_name += item[i];
+        }
     }
     inquirer.prompt([{
         type: 'confirm',
@@ -76,15 +89,21 @@ const purchase = (product_names, product_prices, product_quantity) => {
             name: 'quantity'
         }
     ]).then(response => {
-        if (response.quantity > product_quantity[response.item[0] - 1]) {
-        console.log(`Insufficient quantity, there are only ${product_quantity[response.item[0] - 1]} in stock.`);
+        let index = String(response.item[0]);
+        if (response.item[1] !== ' ') {
+            index += response.item[1];
+        }
+        index = Number(index);
+        index -= 1;
+        if (response.quantity > product_quantity[index]) {
+        console.log(`Insufficient quantity, there are only ${product_quantity[index]} in stock.`);
         inquirer.prompt([{
             type: 'confirm',
-            message: `Would you like to buy all ${product_quantity[response.item[0] - 1]}?`,
+            message: `Would you like to buy all ${product_quantity[index]}?`,
             name: 'buyAll'
         }]).then(res => {
             if (res.buyAll) {
-                checkout(response.item, product_prices[response.item[0] - 1], product_quantity[response.item[0] - 1]);
+                checkout(response.item, product_prices[index], product_quantity[index]);
             } else {
                 console.log('Okay, goodbye.');
                 connection.end();
@@ -93,7 +112,7 @@ const purchase = (product_names, product_prices, product_quantity) => {
             console.log(error);
         })
     } else {
-        checkout(response.item, product_prices[response.item[0] - 1], response.quantity);
+        checkout(response.item, product_prices[index], response.quantity);
     }
 
     }).catch(error => {

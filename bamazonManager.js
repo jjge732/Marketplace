@@ -106,63 +106,61 @@ const chooseProductListType = (actions, database) => {
     })
 }
 
-const displayActions = (actions, database) => {
-    console.log();
-    inquirer.prompt([{
-        type: 'list',
-        message: 'What would you like to do?',
-        choices: actions,
-        name: 'chosenAction'
-    }]).then(res => {
-        switch (res.chosenAction) {
-            case actions[0]:
-                console.log('  Products for sale:');
-                for (let i = 0; i < database.length; i++) {
-                    console.log('    ID ' + database[i].item_id + ': ' + database[i].product_name);
-                }
-                displayActions(actions, database);
-                break;
-
-            case actions[1]:
-                let lowStock = false;
-                for (let i = 0; i < database.length; i++) {
-                    if (database[i].stock_quantity < 10) {
-                        console.log('    ID ' + database[i].item_id + ': ' + database[i].product_name + '  quantity: ' + database[i].stock_quantity + ';');
-                        lowStock = true;
+const displayActions = () => {
+    connection.query('SELECT * FROM products', (err, response) => {
+        if (err) throw err;
+        let actions = ['View products for sale', 'View low inventory', 'Add to inventory', 'Add new product', 'Exit']
+        console.log();
+        inquirer.prompt([{
+            type: 'list',
+            message: 'What would you like to do?',
+            choices: actions,
+            name: 'chosenAction'
+        }]).then(res => {
+            switch (res.chosenAction) {
+                case actions[0]:
+                    console.log('  Products for sale:');
+                    for (let i = 0; i < response.length; i++) {
+                        console.log('    ID ' + response[i].item_id + ': ' + response[i].product_name);
                     }
-                }
-                if (!lowStock) {
-                    console.log('No items are low on stock.');
-                }
-                displayActions(actions, database);
-                break;
+                    displayActions(actions, response);
+                    break;
 
-            case actions[2]:
-                chooseProductListType(actions, database);
-                break;
+                case actions[1]:
+                    let lowStock = false;
+                    for (let i = 0; i < response.length; i++) {
+                        if (response[i].stock_quantity < 10) {
+                            console.log('    ID ' + response[i].item_id + ': ' + response[i].product_name + '  quantity: ' + response[i].stock_quantity + ';');
+                            lowStock = true;
+                        }
+                    }
+                    if (!lowStock) {
+                        console.log('No items are low on stock.');
+                    }
+                    displayActions(actions, response);
+                    break;
 
-            case actions[3]:
-                addProduct(actions, database);
-                break;
+                case actions[2]:
+                    chooseProductListType(actions, response);
+                    break;
 
-            //actions can be added before exit without the need to change this code
-            case actions[actions.length - 1]:
-                console.log('Okay, goodbye.');
-                connection.end();
-                break;
+                case actions[3]:
+                    addProduct(actions, response);
+                    break;
 
-            default:
-                console.log('Support for this command does not exist. Goodbye.')
-                break;
-        }
-    }).catch(err => {
-        console.log(err);
-    })
-}
+                //actions can be added before exit without the need to change this code
+                case actions[actions.length - 1]:
+                    console.log('Okay, goodbye.');
+                    connection.end();
+                    break;
 
-connection.query('SELECT * FROM products', (err, res) => {
-    if (err) throw err;
-    let actions = ['View products for sale', 'View low inventory', 'Add to inventory', 'Add new product', 'Exit']
-    displayActions(actions, res);
-})
+                default:
+                    console.log('Support for this command does not exist. Goodbye.')
+                    break;
+            }
+        }).catch(err => {
+            console.log(err);
+        })
+})};
 
+displayActions();

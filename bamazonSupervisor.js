@@ -27,6 +27,7 @@ const createDepartment = (departments, costs) => {
                 if (err) throw err;
             });
     }
+    displayOptions();
 }
 
 const getDepartmentInfo = () => {
@@ -70,7 +71,7 @@ const viewSales = () => {
         }
         console.log();
         console.table(table);
-        console.log('\n *A value of null results from a department that currently contains no products. \n')
+        console.log('\n *A value of null results from a department that currently contains no products or no sales. \n')
         displayOptions();
     })
 }
